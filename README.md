@@ -12,7 +12,6 @@ The external memory allows the NTM to learn algorithmic tasks, that are much har
 
 This repository implements a vanilla NTM in a straight forward way. The following architecture is used:
 
-![NTM Architecture](./images/ntm.png)
 
 ### Features
 * Batch learning support

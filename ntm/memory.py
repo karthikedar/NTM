@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch import nn
 import numpy as np
 
-
+# torch.set_default_tensor_type('torch.cuda.FloatTensor')
 def _convolve(w, s):
     """Circular convolution implementation."""
     assert s.size(0) == 3

@@ -3,6 +3,12 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+# torch.set_default_tensor_type('torch.cuda.FloatTensor')
+
+# if torch.cuda.is_available():
+#     device = torch.device('cuda')
+# else:
+#     device = torch.device('cpu')
 
 class NTM(nn.Module):
     """A Neural Turing Machine."""

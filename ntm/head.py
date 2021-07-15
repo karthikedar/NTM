@@ -4,16 +4,16 @@ from torch import nn
 import torch.nn.functional as F
 import numpy as np
 
-#torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
+#Spliting a 2D matrix to given lengths' columns.
 def _split_cols(mat, lengths):
-    """Split a 2D matrix to variable length columns."""
+    
     assert mat.size()[1] == sum(lengths), "Lengths must be summed to num columns"
     l = np.cumsum([0] + lengths)
-    results = []
+    final_cols = []
     for s, e in zip(l[:-1], l[1:]):
-        results += [mat[:, s:e]]
-    return results
+        final_cols += [mat[:, s:e]]
+    return final_cols
 
 
 class NTMHeadBase(nn.Module):
@@ -47,9 +47,9 @@ class NTMHeadBase(nn.Module):
         s = F.softmax(s, dim=1)
         γ = 1 + F.softplus(γ)
 
-        w = self.memory.address(k, β, g, s, γ, w_prev)
+        weights = self.memory.address(k, β, g, s, γ, w_prev)
 
-        return w
+        return weights
 
 
 class NTMReadHead(NTMHeadBase):
@@ -78,14 +78,14 @@ class NTMReadHead(NTMHeadBase):
         :param embeddings: input representation of the controller.
         :param w_prev: previous step state
         """
-        o = self.fc_read(embeddings)
-        k, β, g, s, γ = _split_cols(o, self.read_lengths)
+        mat = self.fc_read(embeddings)
+        k, β, g, s, γ = _split_cols(mat, self.read_lengths)
 
         # Read from memory
-        w = self._address_memory(k, β, g, s, γ, w_prev)
-        r = self.memory.read(w)
+        weights = self._address_memory(k, β, g, s, γ, w_prev)
+        readhead = self.memory.read(weights)
 
-        return r, w
+        return readhead, weights
 
 
 class NTMWriteHead(NTMHeadBase):
@@ -120,7 +120,7 @@ class NTMWriteHead(NTMHeadBase):
         e = F.sigmoid(e)
 
         # Write to memory
-        w = self._address_memory(k, β, g, s, γ, w_prev)
-        self.memory.write(w, e, a)
+        weights = self._address_memory(k, β, g, s, γ, w_prev)
+        self.memory.write(weights, e, a)
 
-        return w
+        return weights

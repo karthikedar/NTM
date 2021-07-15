@@ -1,4 +1,4 @@
-"""An NTM's memory implementation."""
+"""Implementation of Memory"""
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -6,7 +6,7 @@ import numpy as np
 
 # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 def _convolve(w, s):
-    """Circular convolution implementation."""
+    """Implementation of Circular convolution"""
     assert s.size(0) == 3
     t = torch.cat([w[-1:], w, w[:1]])
     c = F.conv1d(t.view(1, 1, -1), s.view(1, 1, -1)).view(-1)
@@ -17,11 +17,9 @@ class NTMMemory(nn.Module):
     """Memory bank for NTM."""
     def __init__(self, N, M):
         """Initialize the NTM Memory matrix.
-        The memory's dimensions are (batch_size x N x M).
-        Each batch has it's own memory matrix.
-        :param N: Number of rows in the memory.
-        :param M: Number of columns/features in the memory.
-        """
+        Dimensions of memory are (batch_size x N x M).
+        Every batch has its own memory matrix.
+        where N denotes no. of rows and M denotes no. of columns/features in the memory matrix."""
         super(NTMMemory, self).__init__()
 
         self.N = N
@@ -44,11 +42,11 @@ class NTMMemory(nn.Module):
         return self.N, self.M
 
     def read(self, w):
-        """Read from memory (according to section 3.1)."""
+        """Reading from memory"""
         return torch.matmul(w.unsqueeze(1), self.memory).squeeze(1)
 
     def write(self, w, e, a):
-        """write to memory (according to section 3.2)."""
+        """writing to memory"""
         self.prev_mem = self.memory
         self.memory = torch.Tensor(self.batch_size, self.N, self.M)
         erase = torch.matmul(w.unsqueeze(-1), e.unsqueeze(1))
@@ -56,15 +54,14 @@ class NTMMemory(nn.Module):
         self.memory = self.prev_mem * (1 - erase) + add
 
     def address(self, k, β, g, s, γ, w_prev):
-        """NTM Addressing (according to section 3.3).
-        Returns a softmax weighting over the rows of the memory matrix.
-        :param k: The key vector.
-        :param β: The key strength (focus).
-        :param g: Scalar interpolation gate (with previous weighting).
-        :param s: Shift weighting.
-        :param γ: Sharpen weighting scalar.
-        :param w_prev: The weighting produced in the previous time step.
-        """
+        """Addressing: 
+        This returns a softmax weighting over the rows of the memory matrix.
+        where k is The key vector ;
+        β is The key strength (focus) ;
+        g is Scalar interpolation gate (with previous weighting) ;
+        s is Shift weighting ;
+        γ is Sharpen weighting scalar ;
+        w_prev is The weighting produced in the previous time step."""
         # Content focus
         wc = self._similarity(k, β)
 
@@ -93,3 +90,5 @@ class NTMMemory(nn.Module):
         w = ŵ ** γ
         w = torch.div(w, torch.sum(w, dim=1).view(-1, 1) + 1e-16)
         return w
+
+    

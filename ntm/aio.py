@@ -36,9 +36,11 @@ class EncapsulatedNTM(nn.Module):
         self.N = N
         self.M = M
 
-        # Create the NTM components
+        # Creating Memory component of N blocks with width of M 
         memory = NTMMemory(N, M)
+        # Creating a LSTM controller with given parameters
         controller = LSTMController(num_inputs + M*num_heads, controller_size, controller_layers)
+        #Creting read & write heads
         heads = nn.ModuleList([])
         for i in range(num_heads):
             heads += [
@@ -48,13 +50,14 @@ class EncapsulatedNTM(nn.Module):
 
         self.ntm = NTM(num_inputs, num_outputs, controller, memory, heads)
         self.memory = memory
-
+       
     def init_sequence(self, batch_size):
         """Initializing the state."""
         self.batch_size = batch_size
         self.memory.reset(batch_size)
         self.previous_state = self.ntm.create_new_state(batch_size)
 
+     # Forward Propagation
     def forward(self, x=None):
         if x is None:
             x = torch.zeros(self.batch_size, self.num_inputs)

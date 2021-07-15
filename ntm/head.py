@@ -29,16 +29,7 @@ class NTMHeadBase(nn.Module):
         self.memory = memory
         self.N, self.M = memory.size()
         self.controller_size = controller_size
-
-    def create_new_state(self, batch_size):
-        raise NotImplementedError
-
-    def register_parameters(self):
-        raise NotImplementedError
-
-    def is_read_head(self):
-        return NotImplementedError
-
+  
     def _address_memory(self, k, β, g, s, γ, w_prev):
         # Handle Activations
         k = k.clone()

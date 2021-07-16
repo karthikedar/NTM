@@ -30,8 +30,11 @@ class NTMMemory(nn.Module):
         self.register_buffer('mem_bias', torch.Tensor(N, M))
 
         # Initialize memory bias
+        #Random Memory Initialization
         stdev = 1 / (np.sqrt(N + M))
         nn.init.uniform_(self.mem_bias, -stdev, stdev)
+        #Constant memory Initialization
+         # nn.init.constant_(self.mem_bias, const_init)
 
     def reset(self, batch_size):
         """Initialize memory from bias, for start-of-sequence."""

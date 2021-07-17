@@ -71,8 +71,6 @@ class NTMMemory(nn.Module):
         # Location focus
         wg = self._interpolate(w_prev, wc, g)
         w = self._shift(wg, s,γ)
-        w = self._sharpen(ŵ, γ)
-
         return w
 
     def _similarity(self, k, β,w_prev,g):

@@ -59,5 +59,11 @@ class LSTMController(nn.Module):
         Run a forward path for a sequence 
         Returns the hidden and cell states
         '''
-        output, state = self.layer(x.unsqueeze(0), state)
-        return output.squeeze(0), state
+    def forward(self, x, prev_state):
+        '''
+        Run a forward path for a sequence 
+        Returns the hidden and cell states
+        '''
+        x = x.unsqueeze(0)
+        outp, state = self.lstm(x, prev_state)
+        return outp.squeeze(0), state

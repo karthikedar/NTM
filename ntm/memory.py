@@ -67,21 +67,29 @@ class NTMMemory(nn.Module):
         w_prev is The weighting produced in the previous time step."""
         # Content focus
         wc = self._similarity(k, β,w_prev,g)
-
         # Location focus
-        w = self._shift(wg, s,γ)
+        wg = self._interpolate(w_prev, wc, g)
+        ŵ = self._shift(wg, s)
+        w = self._sharpen(ŵ, γ)
+
         return w
 
-    def _similarity(self, k, β,w_prev,g):
+    def _similarity(self, k, β):
         k = k.view(self.batch_size, 1, -1)
-        wc = F.softmax(β * F.cosine_similarity(self.memory + 1e-16, k + 1e-16, dim=-1), dim=1)
+        w = F.softmax(β * F.cosine_similarity(self.memory + 1e-16, k + 1e-16, dim=-1), dim=1)
+        return w
+
+    def _interpolate(self, w_prev, wc, g):
         return g * wc + (1 - g) * w_prev
 
     def _shift(self, wg, s):
         result = torch.zeros(wg.size())
         for b in range(self.batch_size):
             result[b] = _convolve(wg[b], s[b])
-        w = result** γ
+        return result
+
+    def _sharpen(self, ŵ, γ):
+        w = ŵ ** γ
         w = torch.div(w, torch.sum(w, dim=1).view(-1, 1) + 1e-16)
         return w
 

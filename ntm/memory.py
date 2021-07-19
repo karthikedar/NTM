@@ -69,7 +69,6 @@ class NTMMemory(nn.Module):
         wc = self._similarity(k, β,w_prev,g)
 
         # Location focus
-        wg = self._interpolate(w_prev, wc, g)
         w = self._shift(wg, s,γ)
         return w
 
